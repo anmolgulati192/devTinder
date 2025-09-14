@@ -1,29 +1,29 @@
 const express = require('express');
+const connectDB= require('./config/database');
 const app = express();
+const User = require('./models/user');
 
-// handle auth middleware for all get, post, put, delete requests
-app.use("/admin",
-  (req, res, next) => {
-    try {
-      //logic for db call
-      throw new Error("DB connection failed");
-    } catch (error) {
-      res.status(500).send("Internal Server Error");
+app.post("/signup", async (req, res) => {
+    // creating new instance of user model
+    const user = new User({
+        firstName: "John",
+        lastName: "Doe",
+        emailId: "xyz@google.com",
+        password: "123456",
+    });
+    try{
+    await user.save();
+    res.send("User signed up successfully");
+    } catch(err) {
+        res.status(400).send("Error signing up user");
     }
-}
-)
-
-app.use("/", (err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).send("Something broke!");
 });
 
-app.get("/admin/getAllData", (req, res) => {
-  res.send("Here is the data from the server!");
-})
-
-app.delete("/admin/deleteAllData", (req, res) => {
-  res.send("All data deleted!");
-})
-
-app.listen(3000)
+connectDB().then(() => {
+    console.log("DB connected successfully");
+    app.listen(3000, () => {
+        console.log('Server is running on port 3000');
+    });
+}).catch((err) => {
+    console.log("DB connection failed", err);
+});
