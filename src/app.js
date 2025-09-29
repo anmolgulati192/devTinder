@@ -43,8 +43,10 @@ app.post("/login", async (req, res) => {
     if (!isPasswordMatch) {
       return res.status(400).send("Invalid credentials");
     } else {
-      const token = jwt.sign({ _id: user._id }, "your_jwt_secret");
-      res.cookie("token", token);
+      const token = jwt.sign({ _id: user._id }, "your_jwt_secret", {
+        expiresIn: "1d",
+      });
+      res.cookie("token", token, { expires: new Date(Date.now() + 86400000) });
       res.send("Login successful");
     }
   } catch (err) {
