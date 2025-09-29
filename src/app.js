@@ -4,8 +4,12 @@ const app = express();
 const User = require("./models/user");
 const { validateSignUpData } = require("./utils/validation");
 const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
+const { userAuth } = require("./middlewares/auth");
 
 app.use(express.json());
+app.use(cookieParser());
 
 app.post("/signup", async (req, res) => {
   try {
@@ -30,7 +34,7 @@ app.post("/signup", async (req, res) => {
 
 app.post("/login", async (req, res) => {
   const { emailId, password } = req.body;
-    try {
+  try {
     const user = await User.findOne({ emailId });
     if (!user) {
       return res.status(404).send("Invalid credentials");
@@ -38,11 +42,19 @@ app.post("/login", async (req, res) => {
     const isPasswordMatch = await bcrypt.compare(password, user.password);
     if (!isPasswordMatch) {
       return res.status(400).send("Invalid credentials");
+    } else {
+      const token = jwt.sign({ _id: user._id }, "your_jwt_secret");
+      res.cookie("token", token);
+      res.send("Login successful");
     }
-    res.send("User logged in successfully");
   } catch (err) {
     res.status(400).send("Server error");
   }
+});
+
+app.get("/profile", userAuth, async (req, res) => {
+  const user = req.user;
+  res.send(user);
 });
 
 // get user by email
