@@ -3,7 +3,7 @@ const userRouter = express.Router();
 const { userAuth } = require("../middlewares/auth");
 const ConnectionRequest = require("../models/connectionRequest");
 
-const USER_SAFE_DATA ="firstName lastName"
+const USER_SAFE_DATA = "firstName lastName";
 
 userRouter.get("/user/requests/received", userAuth, async (req, res) => {
   try {
@@ -29,8 +29,16 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
         { fromUserId: loggedInUser._id, status: "accepted" },
         { toUserId: loggedInUser._id, status: "accepted" },
       ],
-    }).populate("fromUserId", USER_SAFE_DATA);
-    const data = connections.map((request) => request.fromUserId);
+    })
+      .populate("fromUserId", USER_SAFE_DATA)
+      .populate("toUserId", USER_SAFE_DATA);
+    const data = connections.map((row) => {
+      if (row.fromUserId._id.toString()===loggedInUser._id.toString()) {
+        return row.toUserId;
+      } else {
+        return row.fromUserId;
+      }
+    });
     res.json({
       message: "Connections retrieved successfully",
       data,
