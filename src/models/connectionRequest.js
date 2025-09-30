@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const connectionRequestSchema = new Schema(
   {
-    fromUserId: { type: Schema.Types.ObjectId, required: true },
+    fromUserId: { type: Schema.Types.ObjectId, required: true, ref: "User" },
     toUserId: { type: Schema.Types.ObjectId, required: true },
     status: {
       type: String,
@@ -21,14 +21,10 @@ connectionRequestSchema.index({ fromUserId: 1, toUserId: 1 });
 
 connectionRequestSchema.pre("save", function (next) {
   const connectionRequest = this;
-    if (connectionRequest.fromUserId.equals(connectionRequest.toUserId)) {
-        throw new Error("fromUserId and toUserId cannot be the same");
-    }
+  if (connectionRequest.fromUserId.equals(connectionRequest.toUserId)) {
+    throw new Error("fromUserId and toUserId cannot be the same");
+  }
   next();
 });
 
-module.exports = mongoose.model(
-  "ConnectionRequest",
-  connectionRequestSchema
-);;
-
+module.exports = mongoose.model("ConnectionRequest", connectionRequestSchema);
