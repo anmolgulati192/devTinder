@@ -4,7 +4,7 @@ const { userAuth } = require("../middlewares/auth");
 const ConnectionRequest = require("../models/connectionRequest");
 const User = require("../models/user");
 
-const USER_SAFE_DATA = "firstName lastName photoUrl about skills";
+const USER_SAFE_DATA = "firstName lastName photoUrl about skills gender age";
 
 userRouter.get("/user/requests/received", userAuth, async (req, res) => {
   try {
@@ -34,7 +34,7 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
       .populate("fromUserId", USER_SAFE_DATA)
       .populate("toUserId", USER_SAFE_DATA);
     const data = connections.map((row) => {
-      if (row.fromUserId._id.toString()===loggedInUser._id.toString()) {
+      if (row.fromUserId._id.toString() === loggedInUser._id.toString()) {
         return row.toUserId;
       } else {
         return row.fromUserId;
@@ -65,11 +65,14 @@ userRouter.get("/user/feed", userAuth, async (req, res) => {
       excludedUserIds.add(connection.toUserId.toString());
     });
     const feedUsers = await User.find({
-        $and: [
-          { _id: { $ne: loggedInUser._id } },
-          { _id: { $nin: Array.from(excludedUserIds) } },
-        ],
-      }).select(USER_SAFE_DATA).skip(skip).limit(limit);
+      $and: [
+        { _id: { $ne: loggedInUser._id } },
+        { _id: { $nin: Array.from(excludedUserIds) } },
+      ],
+    })
+      .select(USER_SAFE_DATA)
+      .skip(skip)
+      .limit(limit);
     res.json({
       message: "User feed retrieved successfully",
       data: feedUsers,
