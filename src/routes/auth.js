@@ -38,7 +38,7 @@ authRouter.post("/login", async (req, res) => {
     } else {
       const token = await user.getJWT();
       res.cookie("token", token, { expires: new Date(Date.now() + 86400000) });
-      res.send("Login successful");
+      res.send(user);
     }
   } catch (err) {
     res.status(400).send("Server error");
